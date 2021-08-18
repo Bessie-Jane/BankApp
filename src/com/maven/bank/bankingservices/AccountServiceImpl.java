@@ -1,5 +1,6 @@
 package com.maven.bank.bankingservices;
 
+import com.maven.bank.datastore.TransactionType;
 import com.maven.bank.entities.Account;
 import com.maven.bank.entities.Customer;
 import com.maven.bank.datastore.AccountType;
@@ -43,7 +44,8 @@ public class AccountServiceImpl implements AccountService{
         TransactionType transactionType = TransactionType.DEPOSIT;
         validateTransaction(amount, depositAccount, transactionType);
 
-        BigDecimal newBalance = depositAccount.getBalance ().add (amount);
+        BigDecimal newBalance = BigDecimal.ZERO;
+        newBalance = depositAccount.getBalance ().add (amount);
         depositAccount.setBalance (newBalance);
         return newBalance;
     }
@@ -77,17 +79,30 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     public BigDecimal withdraw(BigDecimal amount, long accountNumber) throws MavenBankException {
+        //verify withdrawer
+
         Account theAccount = findAccount (accountNumber);
 
         TransactionType transactionType = TransactionType.WITHDRAWAL;
         validateTransaction(amount, theAccount, transactionType);
 
+        try{
+            checkForSufficientBalance(amount, theAccount);
+
+        }catch (MavenBankInsufficientFundsException insufficientFundsException){
+            //apply for overdraft
+            this.applyForOverDraft(theAccount);
+        }
         BigDecimal newBalance = debitAccount (amount, accountNumber);
 
         return newBalance;
 
     }
 
+    @Override
+    public void applyForOverDraft(Account theAccount) {
+        //TODO
+    }
 
     public BigDecimal debitAccount(BigDecimal amount, long accountNumber) throws MavenBankException {
         Account theAccount = findAccount (accountNumber);
@@ -97,7 +112,6 @@ public class AccountServiceImpl implements AccountService{
         return newBalance;
 
     }
-
 
     private boolean accountTypeExists(Customer aCustomer, AccountType type) {
         boolean accountTypeExists = false;
@@ -138,6 +152,12 @@ public class AccountServiceImpl implements AccountService{
                 }
             }
 
+        }
+    }
+
+    private void checkForSufficientBalance(BigDecimal amount, Account account) throws  MavenBankTransactionException{
+        if(amount.compareTo(account.getBalance()) > 0){
+            throw new MavenBankInsufficientFundsException("Insufficient account balance");
         }
     }
 }

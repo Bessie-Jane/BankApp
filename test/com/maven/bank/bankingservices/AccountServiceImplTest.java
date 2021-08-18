@@ -246,7 +246,7 @@ class AccountServiceImplTest {
             assertEquals (depositAmount, bessieSavingsAccount.getBalance ());
 
         } catch (MavenBankTransactionException ex) {
-            ex.printStackTrace ( );
+            ex.printStackTrace ();
         }catch (MavenBankException ex){
             ex.printStackTrace ();
         }
