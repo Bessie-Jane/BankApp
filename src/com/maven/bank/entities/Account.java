@@ -1,40 +1,32 @@
 package com.maven.bank.entities;
 
-import com.maven.bank.datastore.AccountType;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 
-public class Account {
+public abstract class Account {
     private long accountNumber;
-    private AccountType typeOfAccount;
     private BigDecimal balance = BigDecimal.ZERO;
     private String accountPin;
+    private LoanRequest accountLoanRequest;
+    private LocalDateTime startDate;
 
-    public  Account(){}
 
-    public Account(long accountNumber, AccountType type){
-        this.accountNumber = accountNumber;
-        typeOfAccount = type;
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
-    public Account(long accountNumber, AccountType type, BigDecimal balance){
-        this(accountNumber, type);
-        this.balance = balance;
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public long getAccountNumber() {
         return accountNumber;
     }
 
+
     public void setAccountNumber(long accountNumber) {
         this.accountNumber = accountNumber;
-    }
-
-    public AccountType getTypeOfAccount() {
-        return typeOfAccount;
-    }
-
-    public void setTypeOfAccount(AccountType typeOfAccount) {
-        this.typeOfAccount = typeOfAccount;
     }
 
     public BigDecimal getBalance() {
@@ -53,7 +45,11 @@ public class Account {
         this.accountPin = accountPin;
     }
 
-    public Calendar getAccount() {
-        return null;
+    public LoanRequest getAccountLoanRequest() {
+        return accountLoanRequest;
+    }
+
+    public void setAccountLoanRequest(LoanRequest accountLoanRequest) {
+        this.accountLoanRequest = accountLoanRequest;
     }
 }

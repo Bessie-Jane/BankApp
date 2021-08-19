@@ -1,9 +1,11 @@
 package com.maven.bank.bankingservices;
 
+import java.time.Year;
+
 public class BankService {
     private static long currentBVN = 2;
     private static long currentAccountNumber = 3;
-
+    private static Year accountOpeningYear = Year.now().minusYears(7);
 
     public static long generateBVN(){
         currentBVN++;
@@ -35,5 +37,13 @@ public class BankService {
 
     private static void setCurrentAccountNumber(long currentAccountNumber) {
         BankService.currentAccountNumber = currentAccountNumber;
+    }
+
+    public static Year getAccountOpeningYear() {
+        return accountOpeningYear;
+    }
+
+    public static void setAccountOpeningYear(Year accountOpeningYear) {
+        BankService.accountOpeningYear = accountOpeningYear;
     }
 }

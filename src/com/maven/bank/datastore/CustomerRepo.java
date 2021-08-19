@@ -1,7 +1,9 @@
 package com.maven.bank.datastore;
 
 import com.maven.bank.entities.Account;
+import com.maven.bank.entities.CurrentAccount;
 import com.maven.bank.entities.Customer;
+import com.maven.bank.entities.SavingsAccount;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -28,10 +30,11 @@ public class CustomerRepo {
         john.setFirstName("John");
         john.setSurName("Doe");
         john.setPhone("7687687687687");
-        Account johnSavingsAccount = new Account(1,AccountType.SAVINGS);
+        Account johnSavingsAccount = new SavingsAccount(1);
+        john.setRelationshipStartDate(johnSavingsAccount.getStartDate());
         john.getAccounts().add(johnSavingsAccount);
 
-        Account johnCurrentAccount = new Account(2, AccountType.CURRENT, new BigDecimal(50000000));
+        Account johnCurrentAccount = new CurrentAccount(2, BigDecimal.valueOf(50_000_000));
         john.getAccounts().add(johnCurrentAccount);
         customers.put(john.getBvn(), john);
 
@@ -43,7 +46,8 @@ public class CustomerRepo {
         jane.setSurName("bush");
         jane.setPhone("5645645645645");
 
-        Account janeSavingsAccount = new Account(3,AccountType.SAVINGS);
+        Account janeSavingsAccount = new SavingsAccount(3);
+        jane.setRelationshipStartDate(janeSavingsAccount.getStartDate());
         jane.getAccounts().add(janeSavingsAccount);
         customers.put(jane.getBvn(), jane);
 

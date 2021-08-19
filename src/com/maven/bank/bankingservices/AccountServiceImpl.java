@@ -1,10 +1,13 @@
 package com.maven.bank.bankingservices;
 
+import com.maven.bank.datastore.LoanRequestStatus;
 import com.maven.bank.datastore.TransactionType;
 import com.maven.bank.entities.Account;
+import com.maven.bank.entities.CurrentAccount;
 import com.maven.bank.entities.Customer;
 import com.maven.bank.datastore.AccountType;
 import com.maven.bank.datastore.CustomerRepo;
+import com.maven.bank.entities.SavingsAccount;
 import com.maven.bank.exceptions.MavenBankException;
 import com.maven.bank.exceptions.MavenBankInsufficientFundsException;
 import com.maven.bank.exceptions.MavenBankTransactionException;
@@ -16,20 +19,53 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     public long openAccount(Customer theCustomer, AccountType type) throws MavenBankException  {
-        if (theCustomer == null){
-          throw  new MavenBankException("customer not specified");
-        }
-        if(type == null){
-            throw new MavenBankException("account type required to open account");
+        long accountNumber = BigDecimal.ZERO.longValue();
+
+        if (type == null){
+            throw  new MavenBankException("account type required to open account");
         }
 
-        if (accountTypeExists(theCustomer, type)){
+        if(type == AccountType.SAVINGSACCOUNT){
+            accountNumber = openSavingsAccount(theCustomer);
+        }else if(type == AccountType.CURRENTACCOUNT){
+            accountNumber = openCurrentAccount(theCustomer);
+        }
+        return  accountNumber;
+    }
+
+    @Override
+    public long openSavingsAccount(Customer theCustomer) throws MavenBankException {
+
+        if (theCustomer == null){
+            throw  new MavenBankException("Customer and account type required to open account");
+        }
+
+        SavingsAccount newAccount = new SavingsAccount();
+        if (accountTypeExists(theCustomer, newAccount.getClass().getTypeName())){
+            throw new MavenBankException("Customer already has requested account type");
+        }
+
+        newAccount.setAccountNumber(BankService.generateAccountNumber());
+        theCustomer.getAccounts().add(newAccount);
+
+        //add to datastore
+        CustomerRepo.getCustomers().put(theCustomer.getBvn(), theCustomer);
+        return newAccount.getAccountNumber();
+    }
+
+    @Override
+    public long openCurrentAccount(Customer theCustomer) throws MavenBankException {
+
+        if (theCustomer == null){
+            throw  new MavenBankException("customer and account type required to open account");
+        }
+
+        CurrentAccount newAccount = new CurrentAccount();
+        if (accountTypeExists(theCustomer, newAccount.getClass().getTypeName())){
             throw  new MavenBankException("customer already has requested account type");
         }
 
-        Account newAccount = new Account();
         newAccount.setAccountNumber(BankService.generateAccountNumber());
-        newAccount.setTypeOfAccount(type);
         theCustomer.getAccounts().add(newAccount);
 
         //add to datastore
@@ -92,6 +128,7 @@ public class AccountServiceImpl implements AccountService{
         }catch (MavenBankInsufficientFundsException insufficientFundsException){
             //apply for overdraft
             this.applyForOverDraft(theAccount);
+            throw insufficientFundsException;
         }
         BigDecimal newBalance = debitAccount (amount, accountNumber);
 
@@ -104,6 +141,12 @@ public class AccountServiceImpl implements AccountService{
         //TODO
     }
 
+    @Override
+    public LoanRequestStatus applyForLoan(Account theAccount) {
+
+        return null;
+    }
+
     public BigDecimal debitAccount(BigDecimal amount, long accountNumber) throws MavenBankException {
         Account theAccount = findAccount (accountNumber);
         BigDecimal newBalance =  theAccount.getBalance ().subtract (amount);
@@ -113,10 +156,10 @@ public class AccountServiceImpl implements AccountService{
 
     }
 
-    private boolean accountTypeExists(Customer aCustomer, AccountType type) {
+    private boolean accountTypeExists(Customer aCustomer, String typeName) {
         boolean accountTypeExists = false;
         for(Account customerAccount: aCustomer.getAccounts()){
-            if(customerAccount.getTypeOfAccount() == type){
+            if(customerAccount.getClass().getTypeName() == typeName){
                 accountTypeExists = true;
                 break;
             }

@@ -5,6 +5,7 @@ import com.maven.bank.datastore.AccountType;
 import com.maven.bank.datastore.CustomerRepo;
 import com.maven.bank.entities.Account;
 import com.maven.bank.entities.Customer;
+import com.maven.bank.entities.SavingsAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccountTest {
     Customer john;
-    Account johnAccount;
+    Account johnSavingsAccount;
 
 
     @BeforeEach
     void setUp(){
      john = new Customer();
-     johnAccount = new Account();
+     johnSavingsAccount = new SavingsAccount();
     }
 
     @Test
@@ -33,11 +34,10 @@ public class AccountTest {
         john.setPhone("7687687687687");
 
 
-        johnAccount.setAccountNumber(BankService.generateAccountNumber());
-        johnAccount.setTypeOfAccount(AccountType.SAVINGS);
-        johnAccount.setBalance(new BigDecimal(5000));
-        johnAccount.setAccountPin("1000");
-        john.getAccounts().add(johnAccount);
+        johnSavingsAccount.setAccountNumber(BankService.generateAccountNumber());
+        johnSavingsAccount.setBalance(new BigDecimal(5000));
+        johnSavingsAccount.setAccountPin("1000");
+        john.getAccounts().add(johnSavingsAccount);
         assertFalse(CustomerRepo.getCustomers().isEmpty());
 
     }

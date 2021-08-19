@@ -1,9 +1,12 @@
 package com.maven.bank.bankingservices;
 
+import com.maven.bank.datastore.LoanRequestStatus;
+import com.maven.bank.datastore.LoanType;
 import com.maven.bank.entities.Account;
 import com.maven.bank.entities.Customer;
 import com.maven.bank.datastore.AccountType;
 import com.maven.bank.datastore.CustomerRepo;
+import com.maven.bank.entities.LoanRequest;
 import com.maven.bank.exceptions.MavenBankException;
 import com.maven.bank.exceptions.MavenBankInsufficientFundsException;
 import com.maven.bank.exceptions.MavenBankTransactionException;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountServiceImplTest {
     private AccountService accountService;
     private Customer bessie;
+
 
 
     @BeforeEach
@@ -44,10 +49,10 @@ class AccountServiceImplTest {
     void openSavingsAccount(){
         assertFalse(CustomerRepo.getCustomers().isEmpty());
         assertEquals(3, BankService.getCurrentAccountNumber());
-        assertFalse(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
+
 
         try{
-            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGS);
+            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT);
             assertFalse(CustomerRepo.getCustomers().isEmpty());
             assertEquals(4, BankService.getCurrentAccountNumber());
             assertTrue(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
@@ -61,7 +66,7 @@ class AccountServiceImplTest {
 
     @Test
     void openAccountWithNoCustomer(){
-        assertThrows(MavenBankException.class, ()->accountService.openAccount(null, AccountType.SAVINGS));
+        assertThrows(MavenBankException.class, ()->accountService.openAccount(null, AccountType.SAVINGSACCOUNT));
     }
 
     @Test
@@ -71,7 +76,7 @@ class AccountServiceImplTest {
 
     @Test
     void openSameTypeOfAccountForTheSameCustomer(){
-//        System.out.println(CustomerRepo.getCustomers());
+
         Optional<Customer>bessieOptional = CustomerRepo.getCustomers().values().stream().findFirst();
         Customer bessie = ( bessieOptional.isEmpty()) ? null : bessieOptional.get();
         assertEquals(3, BankService.getCurrentAccountNumber());
@@ -80,9 +85,10 @@ class AccountServiceImplTest {
         assertNotNull(bessie.getAccounts());
 
         assertFalse(bessie.getAccounts().isEmpty());
-        assertEquals(AccountType.SAVINGS, bessie.getAccounts().get(0).getTypeOfAccount());
+        assertEquals(AccountType.SAVINGSACCOUNT.toString(),
+                bessie.getAccounts().get(0).getClass().getSimpleName().toUpperCase());
 
-        assertThrows(MavenBankException.class, ()->accountService.openAccount(bessie, AccountType.SAVINGS));
+        assertThrows(MavenBankException.class, ()->accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT));
         assertEquals(3, BankService.getCurrentAccountNumber());
         assertEquals(2, bessie.getAccounts().size());
     }
@@ -95,7 +101,7 @@ class AccountServiceImplTest {
         assertFalse(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
 
         try{
-            long newAccountNumber = accountService.openAccount(bessie, AccountType.CURRENT);
+            long newAccountNumber = accountService.openAccount(bessie, AccountType.CURRENTACCOUNT);
             assertFalse(CustomerRepo.getCustomers().isEmpty());
             assertEquals(4, BankService.getCurrentAccountNumber());
             assertTrue(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
@@ -113,7 +119,7 @@ class AccountServiceImplTest {
         assertFalse(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
 
         try{
-            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGS);
+            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT);
 
             assertFalse(CustomerRepo.getCustomers().isEmpty());
             assertEquals(4, BankService.getCurrentAccountNumber());
@@ -121,7 +127,7 @@ class AccountServiceImplTest {
             assertEquals(1, bessie.getAccounts().size());
             assertEquals(newAccountNumber, bessie.getAccounts().get(0).getAccountNumber());
 
-            newAccountNumber = accountService.openAccount(bessie, AccountType.CURRENT);
+            newAccountNumber = accountService.openAccount(bessie, AccountType.CURRENTACCOUNT);
             assertEquals(5, BankService.getCurrentAccountNumber());
             assertEquals(2, bessie.getAccounts().size());
             assertEquals(newAccountNumber, bessie.getAccounts().get(1).getAccountNumber());
@@ -129,7 +135,6 @@ class AccountServiceImplTest {
         }catch (MavenBankException ex){
             ex.printStackTrace();
         }
-
     }
 
     @Test
@@ -139,7 +144,7 @@ class AccountServiceImplTest {
         assertFalse(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
 
         try{
-            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGS);
+            long newAccountNumber = accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT);
             assertFalse(CustomerRepo.getCustomers().isEmpty());
             assertEquals(4, BankService.getCurrentAccountNumber());
             assertTrue(CustomerRepo.getCustomers().containsKey(bessie.getBvn()));
@@ -148,7 +153,7 @@ class AccountServiceImplTest {
             assertEquals(3, CustomerRepo.getCustomers().size());
 
 
-            assertThrows(MavenBankException.class, () -> accountService.openAccount(bessie, AccountType.SAVINGS));
+            assertThrows(MavenBankException.class, () -> accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT));
 
             assertEquals(3, CustomerRepo.getCustomers().size());
             assertEquals(4, BankService.getCurrentAccountNumber());
@@ -188,7 +193,7 @@ class AccountServiceImplTest {
     @Test
     void deposit() {
         try {
-            long accountNumber = accountService.openAccount(bessie, AccountType.SAVINGS);
+            long accountNumber = accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT);
             Account bessieSavingsAccount = accountService.findAccount(accountNumber);
             assertEquals(BigDecimal.ZERO, bessieSavingsAccount.getBalance());
 
@@ -205,11 +210,12 @@ class AccountServiceImplTest {
     @Test
     void depositVeryLargeDepositAmount(){
         try{
-            long accountNumber = accountService.openAccount(bessie, AccountType.SAVINGS);
-            Account bessieSavingsAccount = accountService.findAccount(accountNumber);
+//           long accountNumber = accountService.openAccount(bessie, AccountType.SAVINGSACCOUNT);
+            Account bessieSavingsAccount = accountService.findAccount(1);
             assertEquals(BigDecimal.ZERO, bessieSavingsAccount.getBalance());
             BigDecimal depositAmount = new BigDecimal("1000000000000000000");
             BigDecimal accountBalance = accountService.deposit(depositAmount, 1);
+
 
             bessieSavingsAccount = accountService.findAccount(1);
             assertEquals(depositAmount, bessieSavingsAccount.getBalance());
@@ -297,5 +303,29 @@ class AccountServiceImplTest {
         assertThrows (MavenBankInsufficientFundsException.class,
                 () -> accountService.withdraw(new BigDecimal (70000), 1));
     }
+
+    @Test
+    void applyForLoan(){
+        LoanRequest johnLoanRequest = new LoanRequest();
+        johnLoanRequest.setLoanAmount(BigDecimal.valueOf(50000000));
+        johnLoanRequest.setApplyDate(LocalDateTime.now());
+        johnLoanRequest.setTypeOfLoan(LoanType.SME);
+        johnLoanRequest.setInterestRate(0.1);
+        johnLoanRequest.setLoanStatus(LoanRequestStatus.NEW);
+        johnLoanRequest.setTenor(24);
+                try{
+                    Account johnCurrentAccount = accountService.findAccount(2);
+                    assertNull(johnCurrentAccount.getAccountLoanRequest());
+                    johnCurrentAccount.setAccountLoanRequest(johnLoanRequest);
+                    assertNotNull(johnCurrentAccount.getAccountLoanRequest());
+                    LoanRequestStatus decision = accountService.applyForLoan(johnCurrentAccount);
+                    assertNull(decision);
+                }
+                catch(MavenBankException ex){
+                    ex.printStackTrace();
+                }
+    }
+
+
 }
 
