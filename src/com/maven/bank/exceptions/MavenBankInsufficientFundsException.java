@@ -1,6 +1,7 @@
 package com.maven.bank.exceptions;
 
 public class MavenBankInsufficientFundsException extends MavenBankTransactionException{
+
     public MavenBankInsufficientFundsException(String message){
         super (message);
     }

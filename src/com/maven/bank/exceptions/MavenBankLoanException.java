@@ -1,6 +1,7 @@
 package com.maven.bank.exceptions;
 
 public class MavenBankLoanException extends MavenBankException{
+
     public MavenBankLoanException(String message){
         super(message);
     }
@@ -8,5 +9,8 @@ public class MavenBankLoanException extends MavenBankException{
         super(message, ex);
     }
 
+    public MavenBankLoanException(Throwable ex){
+        super(ex);
+    }
 
 }

@@ -58,10 +58,12 @@ class LoanServiceImplTest {
         try{
             Account johnCurrentAccount = accountService. findAccount(2);
             assertNull(johnCurrentAccount.getAccountLoanRequest());
-            johnLoanRequest.setLoanAmount(BigDecimal.valueOf(9000));
+            johnLoanRequest.setLoanAmount(BigDecimal.valueOf(900_000));
             johnCurrentAccount.setAccountLoanRequest(johnLoanRequest);
 
             LoanRequest processedLoanRequest = loanService.approveLoanRequest(johnCurrentAccount);
+            assertNotNull(processedLoanRequest);
+            assertNotNull(johnCurrentAccount.getAccountLoanRequest());
             assertEquals(LoanRequestStatus.APPROVED, processedLoanRequest.getLoanStatus());
 
         }catch(MavenBankException ex){
@@ -70,14 +72,16 @@ class LoanServiceImplTest {
     }
 
     @Test
-    void approveLoanWithLengthOfRelationShip(){
+    void approveLoanWithLengthOfRelationShipAndTransactionVolume(){
         try{
             Account johnSavingsAccount = accountService. findAccount(1);
             Optional<Customer> optionalCustomer = CustomerRepo.getCustomers().values().stream().findFirst();
             Customer john = optionalCustomer.isPresent() ? optionalCustomer.get() : null;
             assertNotNull(john);
+
             john.setRelationshipStartDate(johnSavingsAccount.getStartDate().minusYears(2));
-            johnLoanRequest.setLoanAmount(BigDecimal.valueOf(3000000));
+            assertEquals(BigDecimal.valueOf(450000), johnSavingsAccount.getBalance());
+            johnLoanRequest.setLoanAmount(BigDecimal.valueOf(300000));
             johnSavingsAccount.setAccountLoanRequest(johnLoanRequest);
 
         }catch(MavenBankException ex){
@@ -101,4 +105,24 @@ class LoanServiceImplTest {
             ex.printStackTrace();
         }
     }
+
+
+    @Test
+    void approveLoanWithLengthOfRelationship() throws MavenBankException{
+        try{
+            Account johnSavingsAccount = accountService.findAccount(1);
+            Optional <Customer> optionalCustomer = CustomerRepo.getCustomers().values().stream().findFirst();
+            Customer john = optionalCustomer.isPresent() ? optionalCustomer.get() : null;
+            assertNotNull(john);
+            john.setRelationshipStartDate(johnSavingsAccount.getStartDate().minusYears(2));
+            johnLoanRequest.setLoanAmount(BigDecimal.valueOf(3000000));
+            johnSavingsAccount.setAccountLoanRequest(johnLoanRequest);
+        }catch(MavenBankException ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+
+
 }

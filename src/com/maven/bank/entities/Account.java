@@ -2,12 +2,14 @@ package com.maven.bank.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class Account {
     private long accountNumber;
     private BigDecimal balance = BigDecimal.ZERO;
     private String accountPin;
+    private Set<BankTransaction> transactions = new HashSet<>();
     private LoanRequest accountLoanRequest;
     private LocalDateTime startDate;
 
@@ -23,7 +25,6 @@ public abstract class Account {
     public long getAccountNumber() {
         return accountNumber;
     }
-
 
     public void setAccountNumber(long accountNumber) {
         this.accountNumber = accountNumber;
@@ -51,5 +52,13 @@ public abstract class Account {
 
     public void setAccountLoanRequest(LoanRequest accountLoanRequest) {
         this.accountLoanRequest = accountLoanRequest;
+    }
+
+    public Set<BankTransaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(Set<BankTransaction> transactions) {
+        this.transactions = transactions;
     }
 }

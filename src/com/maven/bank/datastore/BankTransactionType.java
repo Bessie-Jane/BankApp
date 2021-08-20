@@ -1,5 +1,5 @@
 package com.maven.bank.datastore;
 
-public enum TransactionType {
+public enum BankTransactionType {
     DEPOSIT, WITHDRAWAL
 }
